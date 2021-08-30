@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# time fpsync -w opc@hpc-node-1  -w opc@hpc-node-2 -w opc@hpc-node-3  -d /mnt/iad-ad-3-fss/fpsync_prototype -t /mnt/iad-ad-3-fss/fpsync_prototype/tmp -vvvv -n 30 -f 900   -o "-lptgoD -v --numeric-ids -e \\\"ssh -i /home/opc/.ssh/gg_id_rsa \\\" "  /mnt/iad-ad-3-fss/linux_src_code/  opc@172.16.1.3:/mnt/nfsshare/dst_linux_src_code/
+
+worker_list=""
+for worker in `less /home/opc/worker_nodes.txt`
+do
+  echo $worker
+  #if [ -z $worker_list ]; then
+  worker_list+=" -w $worker "
+done
+
+echo "worker list: $worker_list "
+
+fpsync_shared_fs_dir={{ fpsync_shared_fs_dir }}
+fpsync_shared_fs_tmp_dir={{ fpsync_shared_fs_tmp_dir }}
+concurrent_sync_jobs=30
+max_files_per_sync_job=900
+# 1073741824 bytes = 1GiB
+max_bytes_per_sync_job=1073741824
+rsync_options="-lptgoD -v --numeric-ids "
+rsync_options_ssh_pre='-e \\\"'
+rsync_options_ssh_post=' \\\"'
+rsync_options_ssh=" ssh -i {{ destination_fs_server_ssh_private_key_path }} "
+rsync_options_all=" -o \" $rsync_options $rsync_options_ssh_pre $rsync_options_ssh $rsync_options_ssh_post \" "
+
+source_fs_directory_to_sync="{{ source_fs_directory_to_sync }}"
+destination_location="{{ destination_fs_server_user }}@{{ destination_fs_server_ip }}:{{ destination_fs_directory_to_sync }}"
+    
+echo "# time fpsync $worker_list  -d $fpsync_shared_fs_dir  -t  $fpsync_shared_fs_tmp_dir -vvvv -n $concurrent_sync_jobs -f $max_files_per_sync_job $rsync_options_all  $source_fs_directory_to_sync $destination_location "  > /home/opc/final_command.txt

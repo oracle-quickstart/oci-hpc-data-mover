@@ -1,0 +1,15 @@
+- hosts: compute[0]
+  tasks:
+    - include_role:
+        name: source-fs
+
+- hosts: compute[0]
+  tasks:
+    - include_role:
+        name: destination-fs
+
+- hosts: compute[0]
+  tasks:
+    - include_role:
+        name: fpsync
+

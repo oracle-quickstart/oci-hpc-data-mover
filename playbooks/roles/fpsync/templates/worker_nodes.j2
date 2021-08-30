@@ -1,0 +1,7 @@
+{% for item in groups['compute'] %}
+
+{%- set host_index = hostvars[item]['ansible_default_ipv4']['address'] | ansible.netcommon.ipsubnet(hostvars[inventory_hostname]['private_subnet'])  -%}
+
+opc@hpc-node-{{ loop.index }}
+{% endfor %}
+

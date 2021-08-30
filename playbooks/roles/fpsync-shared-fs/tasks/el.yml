@@ -1,0 +1,21 @@
+
+- name: Create shared directories for fpsync
+  become: true
+  file:
+    path: "{{ fpsync_shared_fs_dir }}"
+    state: directory
+    owner: opc
+    group: opc
+    mode: 0770
+
+
+- name: Create tmp directories for fpsync
+  become: true
+  file:
+    path: "{{ fpsync_shared_fs_tmp_dir }}"
+    state: directory
+    owner: opc
+    group: opc
+    mode: 0770
+
+

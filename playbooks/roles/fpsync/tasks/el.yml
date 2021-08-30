@@ -1,0 +1,69 @@
+
+- block:
+  - name: install dependencies for fpsync
+    become: true
+    yum:
+      state: latest
+      name:
+        - cpp
+        - gcc
+        - gcc-c++
+        - binutils
+        - gcc-gfortran
+        - git
+        - automake
+        - autoconf
+
+  - name: Clone a repo with separate git directory
+    ansible.builtin.git:
+      repo: https://github.com/martymac/fpart.git
+      dest: /home/opc/fpart
+
+    
+  - name: Configure fpsync
+    command: "{{ item }}"
+    args:
+      chdir: "/home/opc/fpart/"
+    with_items:
+      - "autoreconf -i"
+      - "./configure"
+      - "/usr/bin/make"
+
+
+  - name: Install fpsync
+    become: true
+    command: "{{ item }}"
+    args:
+      chdir: "/home/opc/fpart/"
+    with_items:
+      - "/usr/bin/make install"
+
+
+  - name: Generate worker_nodes.txt
+#    become: true
+    template:
+      src: worker_nodes.j2
+      dest: /home/opc/worker_nodes.txt
+      mode: '0644'
+      backup: yes
+    delegate_to: 127.0.0.1
+
+
+  - name: move worker_nodes on all worker nodes
+#    become: true
+    copy:
+      dest: /home/opc/worker_nodes.txt
+      src: /home/opc/worker_nodes.txt
+      force: yes
+    when: ('compute' in group_names)
+
+
+  - name: Copy oci-hpc-data-mover.sh
+    template:
+      src: oci-hpc-data-mover.sh.j2
+      dest: /home/opc/oci-hpc-data-mover.sh
+      owner: opc
+      group: opc
+      mode: '0755'
+
+
