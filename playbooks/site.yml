@@ -15,7 +15,7 @@
   gather_facts: true
   roles: 
     - oci-cloud-agent
-    - packages
+#    - packages
     - oci-legacy
     - firewall 
     - oci-hostname
@@ -71,9 +71,8 @@
     - include_role: 
         name: nfs-server
       when: cluster_nfs|default(true)|bool
-    - include_role: 
-        name: mysql
       
+
 - hosts: nfs
   become: true
   vars:
@@ -124,25 +123,30 @@
 
 
 
-
 - hosts: bastion
-  tasks: 
-    - include_role: 
-        name: influxdb
+  become: true
+  tasks:
+    - include_role:
+        name: prometheus
       when: monitoring|default(false)|bool
-    - include_role: 
+    - include_role:
         name: grafana
       when: monitoring|default(false)|bool
 
+
+#- hosts: bastion
+#  become: true
+#  tasks:
+#    - include_role:
+#        name: mysql
+      
+# It requires mysql role, so add that also for slurm.
 - hosts: bastion
   vars:
     destroy: false
     initial: true
     download_path: "{{ '/nfs/cluster/' if cluster_nfs|bool else '/tmp' }}"
-  tasks: 
-    - include_role: 
-        name: telegraf
-      when: monitoring|default(false)|bool
+  tasks:
     - include_role: 
         name: slurm
       when: slurm|default(false)|bool
@@ -156,9 +160,6 @@
     - include_role: 
         name: slurm
       when: slurm|default(false)|bool
-    - include_role: 
-        name: telegraf
-      when: monitoring|default(false)|bool
 
 
 
@@ -197,3 +198,7 @@
         name: fpsync
 
 
+# deploy prometheus node exporter on all nodes
+- hosts: compute,bastion
+  roles:
+    - cloudalchemy.node_exporter

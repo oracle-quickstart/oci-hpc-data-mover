@@ -13,11 +13,11 @@ variable "custom_bastion_image" {
   type = string
   default = "image.ocid" 
 }
-variable "bastion_boot_volume_size" {}
+variable "bastion_boot_volume_size" { default = "50" }
 variable "cluster_network_shape" { default = "BM.HPC2.36" }
 variable "instance_pool_shape" { default = "VM.Standard2.4" }
 variable "node_count" {}
-variable "boot_volume_size" {}
+variable "boot_volume_size"  { default = "50" }
 variable "use_marketplace_image" { default = false }
 variable "image" { default = "ocid1.image.oc1..aaaaaaaa5yxem7wzie34hi5km4qm2t754tsfxrjuefyjivebrxjad4jcj5oa" }
 variable "image_ocid" { default = "ocid1.image.oc1..aaaaaaaa5yxem7wzie34hi5km4qm2t754tsfxrjuefyjivebrxjad4jcj5oa" }
@@ -43,23 +43,7 @@ variable "instance_pool_memory" { default = 16 }
 variable "instance_pool_custom_memory" { default = false }
 variable "bastion_memory" { default = 16 }
 variable "bastion_custom_memory" { default = false }
-variable "marketplace_listing" { 
-  default = "1. Oracle Linux 7.9 OFED 5.3-1.0.0.1 RHCK 20210607"
-} 
 
-variable "marketplace_version_id" { 
-  type = map(string) 
-  default = { 
-       "1" = "OL7.9-OFED5.3-1.0.0.1-RHCK-20210607"
-       "2" = "OL7.8-OFED5.0-1.0.0.0-UEK-20200826"
-       "3" = "OL7.7-OFED-4.4-2.0.7.0-UEK-20200229"
-       "4" = "OL7.9-OFED5.0-2.1.8.0-RHCK-20210709"
-  }
-}
-
-variable "marketplace_listing_id" {
-    default = "ocid1.appcataloglisting.oc1..aaaaaaaahzcnanlki5vonyaeoiajjisejikzczygqqwheifymjqx3ft4iowa"
-}
 
 variable "bastion_block_volume_performance" { 
 /* 
@@ -98,6 +82,13 @@ variable "nfs_source_IP" { default = ""}
 variable "nfs_source_path" { default = "/app"}
 variable "nfs_options" {default = ""}
 variable "monitoring" { default = true }
+
+
+variable "use_standard_image_compute" {
+  type=bool
+  default = true
+}
+
 
 variable "unsupported" { 
   type=bool

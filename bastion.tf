@@ -166,19 +166,19 @@ resource "null_resource" "cluster" {
       bastion_mount_ip = local.bastion_mount_ip,
       cluster_mount_ip = local.mount_ip,
       cluster_name = local.cluster_name,
-      shape = var.cluster_network ? var.cluster_network_shape : var.instance_pool_shape,
+      shape = var.instance_pool_shape,
       instance_pool_ocpus = var.instance_pool_ocpus,
       monitoring = var.monitoring,
       bastion_username = var.bastion_username
       compute_username = var.compute_username
-destination_fs_server_ip = var.destination_fs_server_ip
-destination_fs_directory_to_sync = var.destination_fs_directory_to_sync
-destination_fs_server_user = var.destination_fs_server_user
-source_fs_server_ip = var.source_fs_server_ip
-source_fs_server_exported_path = var.source_fs_server_exported_path
-source_fs_local_mount_path = var.source_fs_local_mount_path
-source_fs_directory_to_sync = var.source_fs_directory_to_sync
-source_fs_options = var.source_fs_options
+      destination_fs_server_ip = var.destination_fs_server_ip
+      destination_fs_directory_to_sync = var.destination_fs_directory_to_sync
+      destination_fs_server_user = var.destination_fs_server_user
+      source_fs_server_ip = var.source_fs_server_ip
+      source_fs_server_exported_path = var.source_fs_server_exported_path
+      source_fs_local_mount_path = var.source_fs_local_mount_path
+      source_fs_directory_to_sync = var.source_fs_directory_to_sync
+      source_fs_options = var.source_fs_options
 
       })
 

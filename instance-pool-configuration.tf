@@ -1,6 +1,5 @@
 resource "oci_core_instance_configuration" "instance_pool_configuration" {
-  count = ( ! var.cluster_network ) && ( var.node_count > 0 ) ? 1 : 0
-  depends_on     = [oci_core_app_catalog_subscription.mp_image_subscription]
+  count = ( var.node_count > 0 ) ? 1 : 0
   compartment_id = var.targetCompartment
   display_name   = local.cluster_name
 
@@ -17,7 +16,7 @@ resource "oci_core_instance_configuration" "instance_pool_configuration" {
         "parent_cluster" = local.cluster_name
       }
       metadata = {
-# TODO: add user key to the authorized_keys 
+        # TODO: add user key to the authorized_keys 
         ssh_authorized_keys = "${var.ssh_key}\n${tls_private_key.ssh.public_key_openssh}"
         user_data           = base64encode(data.template_file.config.rendered)
       }
@@ -37,7 +36,8 @@ resource "oci_core_instance_configuration" "instance_pool_configuration" {
       source_details {
         source_type             = "image"
         boot_volume_size_in_gbs = var.boot_volume_size
-        image_id                = local.instance_pool_image
+#        image_id                = local.instance_pool_image
+        image_id                = var.use_standard_image_compute ? data.oci_core_images.linux.images.0.id : local.instance_pool_image
       }
     }
   }

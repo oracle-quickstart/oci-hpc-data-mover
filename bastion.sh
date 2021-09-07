@@ -45,6 +45,7 @@ fi
 ansible-galaxy collection install ansible.netcommon > /dev/null
 ansible-galaxy collection install community.general > /dev/null
 ansible-galaxy collection install ansible.posix > /dev/null
+ansible-galaxy install cloudalchemy.node_exporter > /dev/null
 
 threads=$(nproc)
 forks=$(($threads * 8))

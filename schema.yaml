@@ -46,13 +46,13 @@ variableGroups:
       - ${instance_pool_custom_memory}
       - ${instance_pool_memory}
       - ${node_count}
-      - ${boot_volume_size}
+      - ${use_standard_image_compute}
       - ${compute_username}
-      - ${marketplace_listing}
       - ${unsupported}
       - ${compute_image_compartment}
       - ${image}
       - ${image_ocid}
+      - ${boot_volume_size}
 
   - title: "Source file system"
     variables:
@@ -101,10 +101,8 @@ variableGroups:
       - ${cluster_nfs_export}
       - ${scratch_nfs_export}
       - ${scratch_nfs_mount}
-      - ${marketplace_listing_id}
       - ${ssh_cidr}
       - ${marketplace_source_images}
-      - ${marketplace_version_id}
       - ${cluster_network}
       - ${cluster_network_shape}
       - ${bastion_advanced}
@@ -292,6 +290,7 @@ variables:
     minimum: 50
     title: "Size of the boot volume in GB"
     default: 50
+    visible: false
   bastion_advanced:
     type: boolean
     title: Show advanced options
@@ -459,6 +458,7 @@ variables:
     title: "Size of the boot volume in GB"
     default: 50
     description: "Boot volume size in GB of each worker node"
+    visible: false
 
   use_marketplace_image:
     type: boolean
@@ -467,20 +467,14 @@ variables:
     required: true
     default: false
 
-  marketplace_listing:
-    type: enum
-    title: "Image version"
-    description: "Marketplace listing to use"
+  use_standard_image_compute:
+    type: boolean
+    title: "use standard image"
+    description: >
+      "Use standard Oracle Linux image, otherwise provide custom image OCID. For NFS based Source file system to migrate, using standard image is recommended"
     required: true
-    enum:
-      - "1. Oracle Linux 7.9 OFED 5.3-1.0.0.1 RHCK 20210607"
-      - "2. Oracle Linux 7.8 OFED 5.0-1.0.0.0 UEK 20200826"
-      - "3. Oracle Linux 7.7 OFED 4.4-2.0.7.0 UEK 20200229"
-      - "4. Oracle Linux 7.9 OFED 5.0-2.1.8.0 RHCK 20210709"
-    default: "4. Oracle Linux 7.9 OFED 5.0-2.1.8.0 RHCK 20210709"
-    visible:
-      and:
-        - ${use_marketplace_image}
+    default: true
+
 
   compute_image_compartment:
     title: "compute image compartment"
@@ -489,7 +483,7 @@ variables:
     visible:
       and: 
         - not:
-            - ${use_marketplace_image}
+            - ${use_standard_image_compute}
         - not:
             - ${unsupported}
 
@@ -503,7 +497,7 @@ variables:
     visible:
       and: 
         - not:
-            - ${use_marketplace_image}
+            - ${use_standard_image_compute}
         - not:
             - ${unsupported}
 
@@ -514,7 +508,7 @@ variables:
     default: "opc"
     visible:
       not:
-        - ${use_marketplace_image}
+        - ${use_standard_image_compute}
 
   unsupported: 
     title: "Use unsupported image" 
@@ -523,7 +517,7 @@ variables:
     default: false
     visible:
       not:
-        - ${use_marketplace_image}
+        - ${use_standard_image_compute}
  
   image_ocid:
     title: "Image OCID"
@@ -725,9 +719,9 @@ variables:
 
   monitoring:
     type: boolean
-    title: "Install HPC Cluster Monitoring Tools"
+    title: "Install Monitoring Tools"
     default: false
-    description: "Install Grafana, Telegrapf, and InfluxDB tools for system monitoring."
+    description: "Install Grafana, Prometheus, and Prometheus node exporter tools for system monitoring."
         
   configure: 
     type: boolean

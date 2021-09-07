@@ -23,7 +23,7 @@ home_nfs = ${home_nfs}
 cluster_nfs = ${cluster_nfs}
 cluster_nfs_path = ${cluster_nfs_path}
 scratch_nfs_path = ${scratch_nfs_path}
-cluster_network = ${cluster_network}
+cluster_network = false
 slurm = ${slurm}
 bastion_block = ${bastion_block}
 scratch_nfs_type = ${scratch_nfs_type}
@@ -38,37 +38,19 @@ nfs_source_path=${nfs_source_path}
 nfs_options=${nfs_options}
 instance_pool_ocpus=${instance_pool_ocpus}
 monitoring=${monitoring}
+hyperthreading=true
 fpsync_shared_fs_dir=${nfs_target_path}/fpsync_prototype
 fpsync_shared_fs_tmp_dir=${nfs_target_path}/fpsync_prototype/tmp
-#!@destination_fs_server_ip=172.16.1.3
-#!@#destination_fs_directory_to_sync=/mnt/nfsshare/dir1/dir2
-#!@destination_fs_directory_to_sync=/mnt/nfsshare/dst_linux_src_code/
-#!@destination_fs_server_user=opc
 destination_fs_server_ssh_private_key_path=/home/opc/.ssh/id_rsa
 destination_fs_server_ssh_public_key_path=/home/opc/.ssh/id_rsa.pub
-#!@source_fs_server_ip=172.16.1.3
-#!@source_fs_server_exported_path=/iad-ad-3-fss
-#!@source_fs_local_mount_path=/mnt/iad-ad-3-fss
-#!@source_fs_options=${source_fs_options}
-#!@#source_fs_directory_to_sync=/path/to/directory/to/sync
-#!@source_fs_directory_to_sync=/mnt/iad-ad-3-fss/linux_src_code/
-
-
-
 destination_fs_server_ip=${destination_fs_server_ip}
-#destination_fs_directory_to_sync=/mnt/nfsshare/dir1/dir2
 destination_fs_directory_to_sync=${destination_fs_directory_to_sync}
 destination_fs_server_user=${destination_fs_server_user}
-
 source_fs_server_ip=${source_fs_server_ip}
 source_fs_server_exported_path=${source_fs_server_exported_path}
 source_fs_local_mount_path=${source_fs_local_mount_path}
 source_fs_options=${source_fs_options}
 # Give opc user permission to read src fs
-#source_fs_directory_to_sync=/path/to/directory/to/sync
 source_fs_directory_to_sync=${source_fs_directory_to_sync}
 
-
-
-hyperthreading=true
 
