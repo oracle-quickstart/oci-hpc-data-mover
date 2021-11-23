@@ -1,0 +1,305 @@
+
+
+{% if posix_2_os | bool %}
+
+    {% if destination_os_type == "azureblob" %}
+        {%- set remote = destination_os_type  -%}
+        {%- set type = "azureblob"   -%}
+    {% elif destination_os_type == "oci-s3" %}
+        {%- set remote = "oci-s3"  -%}
+        {%- set type = "s3"   -%}
+        {%- set provider = "Other"   -%}
+        {%- set env_auth = "false"   -%}
+    {% elif destination_os_type == "s3" %}
+        {%- set remote = "s3"  -%}
+        {%- set type = "s3"   -%}
+        {%- set provider = "AWS"   -%}
+        {%- set env_auth = "false"   -%}
+    {% elif destination_os_type == "gcs" %}
+        {%- set remote = "gcs"  -%}
+        {%- set type = "google cloud storage"   -%}
+        {%- set token = "token-value"   -%}
+    {% else %}
+        {%- set remote = destination_os_type  -%}
+        {%- set type = "s3"   -%}
+        {%- set provider = "Other"   -%}
+        {%- set env_auth = "false"   -%}
+    {% endif %}
+
+    {%- set region = destination_region  -%}
+    {%- set access_key_id = destination_access_key_id  -%}
+    {%- set secret_access_key = destination_secret_access_key  -%}
+    {%- set endpoint = destination_endpoint  -%}
+
+{% endif %}
+
+{% if os_2_posix | bool %}
+
+    {% if src_os_type == "azureblob" %}
+        {%- set remote = src_os_type  -%}
+        {%- set type = "azureblob"   -%}
+    {% elif src_os_type == "oci-s3" %}
+        {%- set remote = "oci-s3"  -%}
+        {%- set type = "s3"   -%}
+        {%- set provider = "Other"   -%}
+        {%- set env_auth = "false"   -%}
+    {% elif src_os_type == "s3" %}
+        {%- set remote = "s3"  -%}
+        {%- set type = "s3"   -%}
+        {%- set provider = "AWS"   -%}
+        {%- set env_auth = "false"   -%}
+    {% elif src_os_type == "gcs" %}
+        {%- set remote = "gcs"  -%}
+        {%- set type = "google cloud storage"   -%}
+        {%- set token = "token-value"   -%}
+    {% else %}
+        {%- set remote = src_os_type  -%}
+        {%- set type = "s3"   -%}
+        {%- set provider = "Other"   -%}
+        {%- set env_auth = "false"   -%}
+    {% endif %}
+
+    {%- set region = src_region  -%}
+    {%- set access_key_id = src_access_key_id  -%}
+    {%- set secret_access_key = src_secret_access_key  -%}
+    {%- set endpoint = src_endpoint  -%}
+{% endif %}
+
+
+{% if os_2_os | bool %}
+
+    {% if destination_os_type == "azureblob" %}
+    {%- set destination_remote = destination_os_type  -%}
+    {%- set destination_type = "azureblob"   -%}
+    {% elif destination_os_type == "oci-s3" %}
+    {%- set destination_remote = "oci-s3"  -%}
+    {%- set destination_type = "s3"   -%}
+    {%- set destination_provider = "Other"   -%}
+    {%- set destination_env_auth = "false"   -%}
+    {% elif destination_os_type == "s3" %}
+    {%- set destination_remote = "s3"  -%}
+    {%- set destination_type = "s3"   -%}
+    {%- set destination_provider = "AWS"   -%}
+    {%- set destination_env_auth = "false"   -%}
+    {% elif destination_os_type == "gcs" %}
+    {%- set destination_remote = "gcs"  -%}
+    {%- set destination_type = "google cloud storage"   -%}
+    {%- set destination_token = "token-value"   -%}
+    {% else %}
+    {%- set destination_remote = destination_os_type  -%}
+    {%- set destination_type = "s3"   -%}
+    {%- set destination_provider = "Other"   -%}
+    {%- set destination_env_auth = "false"   -%}
+    {% endif %}
+
+    {% if src_os_type == "azureblob" %}
+    {%- set src_remote = src_os_type  -%}
+    {%- set src_type = "azureblob"   -%}
+    {% elif src_os_type == "oci-s3" %}
+    {%- set src_remote = "oci-s3"  -%}
+    {%- set src_type = "s3"   -%}
+    {%- set src_provider = "Other"   -%}
+    {%- set src_env_auth = "false"   -%}
+    {% elif src_os_type == "s3" %}
+    {%- set src_remote = "s3"  -%}
+    {%- set src_type = "s3"   -%}
+    {%- set src_provider = "AWS"   -%}
+    {%- set src_env_auth = "false"   -%}
+    {% elif src_os_type == "gcs" %}
+    {%- set src_remote = "gcs"  -%}
+    {%- set src_type = "google cloud storage"   -%}
+    {%- set src_token = "token-value"   -%}
+    {% else %}
+    {%- set src_remote = src_os_type  -%}
+    {%- set src_type = "s3"   -%}
+    {%- set src_provider = "Other"   -%}
+    {%- set src_env_auth = "false"   -%}
+    {% endif %}
+
+{% endif %}
+
+
+{% if os_2_os | bool %}
+
+    {% if src_remote | length > 0 %}
+    {% if src_region | length > 0 %}
+    [{{ src_remote }}-{{ src_region }}]
+    {% else %}
+    [{{ src_remote }}]
+    {% endif %}
+    {% endif %}
+    {% if src_type | length > 0 %}
+    type = {{ src_type }}
+    {% endif %}
+
+
+    {% if src_os_type == "azureblob" %}
+    account = {{ src_access_key_id }}
+    key = {{ src_secret_access_key }}
+
+    {% elif src_os_type == "gcs" %}
+    project_number = {{ src_access_key_id }}
+    token = {{ src_secret_access_key }}
+
+    {% else %}
+
+    {% if src_provider | length > 0 %}
+    provider = {{ src_provider }}
+    {% endif %}
+    {% if src_env_auth | length > 0 %}
+    env_auth = {{ src_env_auth }}
+    {% endif %}
+    {% if src_access_key_id | length > 0 %}
+    access_key_id = {{ src_access_key_id }}
+    {% endif %}
+    {% if src_secret_access_key | length > 0 %}
+    secret_access_key = {{ src_secret_access_key }}
+    {% endif %}
+    {% if src_region | length > 0 %}
+    region = {{ src_region }}
+    {% endif %}
+    {% if src_endpoint | length > 0 %}
+    endpoint = {{ src_endpoint }}
+    {% endif %}
+
+    {% endif %}
+
+
+    {% if destination_remote | length > 0 %}
+    {% if destination_region | length > 0 %}
+    [{{ destination_remote }}-{{ destination_region }}]
+    {% else %}
+    [{{ destination_remote }}]
+    {% endif %}
+    {% endif %}
+    {% if destination_type | length > 0 %}
+    type = {{ destination_type }}
+    {% endif %}
+
+
+    {% if destination_os_type == "azureblob" %}
+    account = {{ destination_access_key_id }}
+    key = {{ destination_secret_access_key }}
+
+    {% elif destination_os_type == "gcs" %}
+    project_number = {{ destination_access_key_id }}
+    token = {{ destination_secret_access_key }}
+
+    {% else %}
+
+    {% if destination_provider | length > 0 %}
+    provider = {{ destination_provider }}
+    {% endif %}
+    {% if destination_env_auth | length > 0 %}
+    env_auth = {{ destination_env_auth }}
+    {% endif %}
+    {% if destination_access_key_id | length > 0 %}
+    access_key_id = {{ destination_access_key_id }}
+    {% endif %}
+    {% if destination_secret_access_key | length > 0 %}
+    secret_access_key = {{ destination_secret_access_key }}
+    {% endif %}
+    {% if destination_region | length > 0 %}
+    region = {{ destination_region }}
+    {% endif %}
+    {% if destination_endpoint | length > 0 %}
+    endpoint = {{ destination_endpoint }}
+    {% endif %}
+
+    {% endif %}
+
+
+
+{% else %}
+
+    {% if remote | length > 0 %}
+    {% if region | length > 0 %}
+    [{{ remote }}-{{ region }}]
+    {% else %}
+    [{{ remote }}]
+    {% endif %}
+    {% endif %}
+    {% if type | length > 0 %}
+    type = {{ type }}
+    {% endif %}
+
+    {% if os_2_posix | bool %}
+
+    {% if src_os_type == "azureblob" %}
+    account = {{ access_key_id }}
+    key = {{ secret_access_key }}
+
+    {% elif src_os_type == "gcs" %}
+    project_number = {{ access_key_id }}
+    token = {{ secret_access_key }}
+
+    {% else %}
+
+    {% if provider | length > 0 %}
+    provider = {{ provider }}
+    {% endif %}
+    {% if env_auth | length > 0 %}
+    env_auth = {{ env_auth }}
+    {% endif %}
+    {% if access_key_id | length > 0 %}
+    access_key_id = {{ access_key_id }}
+    {% endif %}
+    {% if secret_access_key | length > 0 %}
+    secret_access_key = {{ secret_access_key }}
+    {% endif %}
+    {% if region | length > 0 %}
+    region = {{ region }}
+    {% endif %}
+    {% if endpoint | length > 0 %}
+    endpoint = {{ endpoint }}
+    {% endif %}
+
+    {% endif %}
+
+    {% endif %}
+
+
+    {% if posix_2_os | bool %}
+
+    {% if destination_os_type == "azureblob" %}
+    account = {{ access_key_id }}
+    key = {{ secret_access_key }}
+
+    {% elif destination_os_type == "gcs" %}
+    project_number = {{ access_key_id }}
+    token = {{ secret_access_key }}
+
+    {% else %}
+
+    {% if provider | length > 0 %}
+    provider = {{ provider }}
+    {% endif %}
+    {% if env_auth | length > 0 %}
+    env_auth = {{ env_auth }}
+    {% endif %}
+    {% if access_key_id | length > 0 %}
+    access_key_id = {{ access_key_id }}
+    {% endif %}
+    {% if secret_access_key | length > 0 %}
+    secret_access_key = {{ secret_access_key }}
+    {% endif %}
+    {% if region | length > 0 %}
+    region = {{ region }}
+    {% endif %}
+    {% if endpoint | length > 0 %}
+    endpoint = {{ endpoint }}
+    {% endif %}
+
+    {% endif %}
+    {% endif %}
+
+{% endif %}
+
+
+
+
+
+
+
+
+

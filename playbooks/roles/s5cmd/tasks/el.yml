@@ -1,0 +1,52 @@
+
+- block:
+
+  - name: Download go
+    command: "wget https://golang.org/dl/go1.17.2.linux-amd64.tar.gz"
+
+  - name: Install go
+    become: true
+    command: "{{ item }}"
+    with_items:
+      - "rm -rf /usr/local/go"
+      - "tar -C /usr/local -xzf /home/opc/go1.17.2.linux-amd64.tar.gz"
+
+
+  - name: install dependencies for s5cmd
+    become: true
+    yum:
+      state: latest
+      name:
+        - git
+
+
+  - name: Clone s5cmd repo
+    ansible.builtin.git:
+      repo: https://github.com/peak/s5cmd.git
+      dest: /home/opc/s5cmd
+      force: yes
+
+    
+  - name: Install s5cmd
+    command: "{{ item }}"
+    args:
+      chdir: "/home/opc/s5cmd"
+    with_items:
+      - "/usr/local/go/bin/go install  github.com/peak/s5cmd"
+
+
+  - name: Create config directory
+    file:
+      path: '/home/opc/.aws'
+      state: directory
+      mode: '0700'
+
+  - name: Copy credentials.j2
+    template:
+      src: credentials.j2
+      dest: '/home/opc/.aws/credentials'
+      owner: opc
+      group: opc
+      mode: '0600'
+
+

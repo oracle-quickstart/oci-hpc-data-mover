@@ -17,7 +17,31 @@ outputs:
     type: copyableString
     visible: true
 
+
 variableGroups:
+  - title: "Prerequisites"
+    variables:
+      - ${prereq_complete}
+
+  - title: "Type of Migration (select only one). For more details: https://github.com/oracle-quickstart/oci-hpc-data-mover "
+    variables:
+      - ${posix_2_posix}
+      - ${posix_2_os}
+      - ${os_2_os}
+      - ${os_2_posix}
+      - ${src_os_type}
+      - ${destination_os_type}
+
+  - title: "Supported Migration Tools. For comparison of tools: https://github.com/oracle-quickstart/oci-hpc-data-mover"
+    variables:
+      - ${fpsync}
+      - ${oci_parallel_transfer_tools}
+      - ${posix_all_tools}
+      - ${rclone}
+      - ${s5cmd}
+      - ${oci_cli}
+      - ${os_all_tools}
+
   - title: "Cluster configuration"
     variables:
       - ${targetCompartment}
@@ -54,17 +78,30 @@ variableGroups:
       - ${image_ocid}
       - ${boot_volume_size}
 
-  - title: "Source file system"
+  - title: "Source File System or Object Storage"
     variables:
+      - ${src_access_key_id}
+      - ${src_secret_access_key}
+      - ${src_region}
+      - ${src_endpoint}
+      - ${src_bucket_name}
       - ${source_fs_server_exported_path}
       - ${source_fs_server_ip}
       - ${source_fs_local_mount_path}
       - ${source_fs_options}
       - ${source_fs_directory_to_sync}
 
-  - title: "Destination file system"
+  - title: "Destination File System or Object Storage"
     variables:
+      - ${destination_access_key_id}
+      - ${destination_secret_access_key}
+      - ${destination_region}
+      - ${destination_endpoint}
+      - ${destination_bucket_name}
       - ${destination_fs_server_ip}
+      - ${destination_fs_server_exported_path}
+      - ${destination_fs_local_mount_path}
+      - ${destination_fs_options}
       - ${destination_fs_directory_to_sync}
       - ${destination_fs_server_user}
 
@@ -87,42 +124,172 @@ variableGroups:
       - ${private_subnet_id}
       - ${vcn_subnet}
       - ${public_subnet}
-      - ${additional_subnet}
       - ${private_subnet}
+      - ${additional_subnet}
   - title: "Software"
     variables:
-      - ${slurm}
       - ${monitoring}
   - title: "Hidden"
     variables:
       - ${region}
       - ${tenancy_ocid}
-      - ${cluster_nfs_mount}
-      - ${cluster_nfs_export}
-      - ${scratch_nfs_export}
-      - ${scratch_nfs_mount}
       - ${ssh_cidr}
       - ${marketplace_source_images}
-      - ${cluster_network}
-      - ${cluster_network_shape}
       - ${bastion_advanced}
-      - ${home_nfs}
-      - ${use_cluster_nfs}
-      - ${cluster_nfs_path}
-      - ${bastion_block}
-      - ${bastion_block_volume_size}
-      - ${bastion_block_volume_performance}
       - ${use_marketplace_image}
       - ${use_advanced}
-      - ${use_scratch_nfs}
-      - ${scratch_nfs_path}
-      - ${scratch_nfs_type_cluster}
-      - ${scratch_nfs_type_pool}
-      - ${cluster_block_volume_size}
-      - ${cluster_block_volume_performance}
       - ${configure}
     visible: false
 variables:
+  prereq_complete:
+    type: boolean
+    title: "Prerequisites Completed"
+    description: "Click the checkbox, if prerequisites to deploy this solution have been done. Refer to Usage Information section on this page:  https://cloudmarketplace.oracle.com/marketplace/en_US/listing/108840961 or https://github.com/oracle-quickstart/oci-hpc-data-mover"
+    default: false
+    required: true
+
+
+  posix_2_posix:
+    type: boolean
+    title: "From one POSIX to another POSIX file system"
+    description: "Click the checkbox, if you plan to migrate from one POSIX to another POSIX file system. Example NFS to NFS, NFS to Parallel File Systems (GPFS,BeeGFS,Lustre, etc.) or vice versa"
+    default: false
+    required: true
+
+  posix_2_os:
+    type: boolean
+    title: "From POSIX to Object Storage"
+    description: "Click the checkbox, if you plan to migrate from POSIX file system to Object Storage. Example: On-premise POSIX (NFS,GPFS,BeeGFS,Lustre, etc.) file system  to OCI Object Storage or POSIX file system on OCI to OCI Object Storage."
+    default: false
+    required: true
+
+  os_2_os:
+    type: boolean
+    title: "From Object Storage to Object Storage"
+    description: "Click the checkbox, if you plan to migrate from Object Storage to  another Object Storage. Object Storage can be OCI, AWS S3, GCP, Azure or any other cloud provider or on-premise Object Storage (like Minio). It can also be used to migrate from one OCI region to another OCI region."
+    default: false
+    required: true
+
+  os_2_posix:
+    type: boolean
+    title: "From Object Storage to POSIX file system"
+    description: "Click the checkbox, if you plan to migrate from Object Storage to POSIX file system. Example OCI Object Storage to NFS or Parallel File Systems (GPFS,BeeGFS,Lustre, etc.)"
+    default: false
+    required: true
+
+
+  src_os_type:
+    title: "Source Object Storage Type"
+    default: "oci-s3"
+    description: "Source Object Storage to migrate data from"
+    type: enum
+    required: false
+    enum:
+      - "oci-s3"
+      - "azureblob"
+      - "s3"
+      - "gcs"
+      - "other-s3-compatible-storage"
+    visible:
+      or:
+        - ${os_2_os}
+        - ${os_2_posix}
+
+
+  destination_os_type:
+    title: "Destination Object Storage Type"
+    default: "oci-s3"
+    description: "Destination Object Storage to migrate data to"
+    type: enum
+    required: false
+    enum:
+      - "oci-s3"
+      - "azureblob"
+      - "s3"
+      - "gcs"
+      - "other - s3 compatible storage"
+    visible:
+      or:
+        - ${os_2_os}
+        - ${posix_2_os}
+
+
+
+
+  fpsync:
+    type: boolean
+    title: "Install fpsync"
+    description: "Install fpsync. Internally uses rsync and fpart for faster migration."
+    default: false
+    required: true
+    visible: ${posix_2_posix}
+
+  oci_parallel_transfer_tools:
+    type: boolean
+    title: "Install OCI Parallel File Transfer Tools"
+    description: "Install OCI Parallel File Transfer Tools"
+    default: false
+    required: true
+    visible: ${posix_2_posix}
+
+  posix_all_tools:
+    type: boolean
+    title: "Install All"
+    description: "Install all above POSIX file transfer tools"
+    default: false
+    required: true
+    visible: ${posix_2_posix}
+
+
+  rclone:
+    type: boolean
+    title: "Install rclone"
+    description: "Install rclone"
+    default: false
+    required: true
+    visible:
+      or:
+        - ${posix_2_os}
+        - ${os_2_os}
+        - ${os_2_posix}
+        
+  s5cmd:
+    type: boolean
+    title: "Install s5cmd"
+    description: "Install s5cmd"
+    default: false
+    required: true
+    visible:
+      or:
+        - ${posix_2_os}
+        - ${os_2_os}
+        - ${os_2_posix}
+        
+  oci_cli:
+    type: boolean
+    title: "Install OCI CLI"
+    description: "Install OCI CLI"
+    default: false
+    required: true
+    visible:
+      or:
+        - ${posix_2_os}
+        - ${os_2_os}
+        - ${os_2_posix}
+        
+  os_all_tools:
+    type: boolean
+    title: "Install All"
+    description: "Install  all above Object Storage related migration tools"
+    default: false
+    required: true
+    visible:
+      or:
+        - ${posix_2_os}
+        - ${os_2_os}
+        - ${os_2_posix}
+
+
   targetCompartment:
     title: "target compartment"
     type: oci:identity:compartment:id
@@ -295,80 +462,8 @@ variables:
     type: boolean
     title: Show advanced options
     default: false
-  bastion_block:
-    type: boolean
-    title: Additional block volume for shared space
-    visible:
-      and:
-        - ${bastion_advanced}
-    default: false
-    required: true
-  bastion_block_volume_size:
-    required: true
-    type: integer
-    title: "Size of the additional volume in GB"
-    default: 1000
-    visible:
-      and:
-        - and:
-            - ${bastion_block}
-            - ${bastion_advanced}
-  bastion_block_volume_performance:
-    type: enum
-    title: "Block volume performance"
-    required: true
-    enum:
-      - "0.  Lower performance"
-      - "10. Balanced performance"
-      - "20. High Performance"
-    default: "10. Balanced performance"
-    visible:
-      and:
-        - and:
-            - ${bastion_block}
-            - ${bastion_advanced}
-  home_nfs:
-    type: boolean
-    title: "shared NFS /home from bastion"
-    visible:
-      and:
-        - ${bastion_advanced}
-    default: false
-  use_cluster_nfs:
-    type: boolean
-    title: "shared NFS volume from bastion"
-    visible:
-      and:
-        - ${bastion_advanced}
-    default: false
-  cluster_nfs_path:
-    title: "Cluster share mount point"
-    description: "Path to NFS share"
-    default: "/nfs/cluster"
-    type: string
-    visible:
-      and:
-        - ${bastion_advanced}
-        - ${use_cluster_nfs}
-  cluster_network:
-    title: Use cluster network
-    type: boolean
-    description: Use ROCEv2 cluster network
-    default: false
 
-  cluster_network_shape:
-    type: enum
-    enum:
-      - "BM.HPC2.36"
-      - "BM.GPU4.8"
-      - "BM.Optimized3.36"
-    default: "BM.HPC2.36"
-    title: "Shape of the Worker Nodes"
-    description: "Shape of worker nodes to use for HPC Data Mover Cluster"
-    required: true
-    visible:
-      and:
-        - ${cluster_network}
+
 
   instance_pool_shape:
     title: "Shape of the Worker Nodes"
@@ -376,9 +471,7 @@ variables:
     type: oci:core:instanceshape:name
     dependsOn:
       compartmentId: ${targetCompartment}
-    visible:
-      not:
-        - ${cluster_network}
+    visible: true
     description: "Shape of worker nodes to use for HPC Data Mover Cluster"
 
   instance_pool_ocpus:
@@ -471,7 +564,7 @@ variables:
     type: boolean
     title: "use standard image"
     description: >
-      "Use standard Oracle Linux image, otherwise provide custom image OCID. For NFS based Source file system to migrate, using standard image is recommended"
+      "Use standard Oracle Linux image, otherwise provide custom image OCID. Using standard image is recommended, unless mounting of parallel file system is required."
     required: true
     default: true
 
@@ -532,105 +625,8 @@ variables:
     type: boolean
     title: "Show advanced options"
     default: false
-  use_scratch_nfs:
-    type: boolean
-    title: "Shared NFS scratch space from NVME or Block volume"
-    visible:
-      and:
-        - ${use_advanced}
-    default: false
-  scratch_nfs_type_cluster:
-    type: enum
-    title: "Scratch storage configuration"
-    enum:
-      - "none"
-      - "nvme"
-      - "block"
-    default: "nvme"
-    visible:
-      and:
-        - ${cluster_network}
-        - ${use_advanced}
-        - ${use_scratch_nfs}
-  scratch_nfs_type_pool:
-    type: enum
-    title: "Scratch storage configuration"
-    enum:
-      - "none"
-      - "block"
-    default: "none"
-    visible:
-      and: 
-        - not:
-            - ${cluster_network}
-            - ${use_scratch_nfs}
-        - and: 
-            - ${use_advanced}
-  cluster_block_volume_size:
-    required: true
-    type: integer
-    title: "Size of the additional volume in GB"
-    default: 1000
-    visible:
-      and:
-        - or:
-            - and: 
-                - eq:
-                    - ${scratch_nfs_type_cluster}
-                    - "block"
-                - and:
-                    - ${use_advanced}
-                    - ${cluster_network}
-                    - ${use_scratch_nfs}
-            - and: 
-                - eq:
-                    - ${scratch_nfs_type_pool}
-                    - "block"
-                - and:
-                    - not:
-                        - ${cluster_network}
-                    - and: 
-                        - ${use_scratch_nfs}
-                        - ${use_advanced}
-  cluster_block_volume_performance:
-    type: enum
-    title: "Block volume performance"
-    required: true
-    enum:
-      - "0.  Lower performance"
-      - "10. Balanced performance"
-      - "20. High Performance"
-    default: "10. Balanced performance"
-    visible:
-      and:
-        - or:
-            - and: 
-                - eq:
-                    - ${scratch_nfs_type_cluster}
-                    - "block"
-                - and:
-                    - ${cluster_network}
-                    - ${use_scratch_nfs}
-                    - ${use_advanced}
-            - and: 
-                - eq:
-                    - ${scratch_nfs_type_pool}
-                    - "block"
-                - and:
-                    - not:
-                        - ${cluster_network}
-                    - and: 
-                        - ${use_scratch_nfs}
-                        - ${use_advanced}
-  scratch_nfs_path:
-    title: "NFS scratch space mount point"
-    description: "Path to NFS share"
-    default: "/nfs/scratch"
-    type: string
-    visible:
-      and:
-        - ${use_advanced}
-        - ${use_scratch_nfs}
+
+
   use_existing_vcn:
     type: boolean
     title: "Use Existing VCN"
@@ -686,9 +682,9 @@ variables:
         - ${use_existing_vcn}
   additional_subnet:
     type: string
-    title: "Additional subnet IP range"
+    title: "Additional Private Subnet IP range"
     default: "172.16.1.0/24"
-    description: "Must be within VCN subnet"
+    description: "Must be within VCN subnet. Optional, can be useful for Bare metal worker nodes"
     required: true
     visible:
       not:
@@ -711,11 +707,6 @@ variables:
     visible:
       not:
         - ${use_existing_vcn}
-  slurm:
-    type: boolean
-    title: "Install SLURM"
-    default: false
-    description: "Needed for scheduling" 
 
   monitoring:
     type: boolean
@@ -729,19 +720,26 @@ variables:
     default: true
     description: "If unchecked, cluster will be launched but left unconfigured"
 
+
   add_nfs:
     type: boolean
-    title: "Use NFS file system - existing FSS/new FSS or your own NFS server"
+    title: "Use NFS file system - it can be existing FSS or new FSS or your own NFS server"
     default: false
     description: "The Data Mover shared file system is used by all worker nodes to share which files/directories will be migrated/synced/copied by each worker node.  Also used to save Data mover log files."
-    visible: true
+    visible:
+      or:
+        - ${posix_2_posix}
 
   create_ffs:
     type: boolean
     title: "Create FSS"
     default: false
-    description: "For FSS, leave options filed empty."
-    visible: ${add_nfs}
+    description: "For FSS, leave options field below empty."
+    visible:
+      and:
+        - ${add_nfs}
+        - ${posix_2_posix}
+
 
   fss_compartment:
     title: "FSS compartment"
@@ -752,7 +750,7 @@ variables:
       and:
         - ${add_nfs}
         - ${create_ffs}
-
+        - ${posix_2_posix}
   fss_ad:
     type: oci:identity:availabilitydomain:name
     dependsOn:
@@ -761,18 +759,20 @@ variables:
       and:
         - ${add_nfs}
         - ${create_ffs}
+        - ${posix_2_posix}
     default: ${ad}
     description: "FSS Availability Domain"
     title: "FSS Availability Domain"
         
   nfs_target_path:
     type: string
-    title: "NFS Path"
-    default: "/app"
-    description: "Value of the path on which you can mount the drive"
+    title: "NFS Local Mount Directory Path"
+    default: "/mnt/iad-ad-3-fss"
+    description: "Value of the local mount directory to mount the shared file system"
     visible: 
       and:
         - ${add_nfs}
+        - ${posix_2_posix}
   nfs_source_IP:
     type: string
     title: "NFS server IP"
@@ -781,14 +781,20 @@ variables:
     visible: 
       and:
         - ${add_nfs} 
+        - ${posix_2_posix}
         - not:
           - ${create_ffs}
   nfs_source_path:
     type: string
-    title: "NFS server Path"
-    default: "/app"
-    description: "Value of the path on the NFS server"
-    visible: ${add_nfs}
+    title: "NFS server exported directory Path"
+    default: "/nfs-server-export-path"
+    description: "Value of the exported directory path on the NFS server."
+    visible:
+      and:
+        - ${add_nfs}
+        - ${posix_2_posix}
+        - not:
+          - ${create_ffs}
   nfs_options:
     type: string
     title: "Options"
@@ -796,9 +802,85 @@ variables:
     description: "Mount options, FSS requires empty string"
     visible: 
       and:
-        - ${add_nfs} 
+        - ${add_nfs}
+        - ${posix_2_posix}
         - not:
           - ${create_ffs}
+
+
+  src_access_key_id:
+    title: "Access key for Object Storage"
+    default: ""
+    description: "Access key for Object Storage. access_key = Account name for Azure.  access_key = project_number for GCP"
+    type: string
+    required: false
+    visible:
+      or:
+        - ${os_2_os}
+        - ${os_2_posix}
+
+  src_secret_access_key:
+    title: "Secret key for Object Storage"
+    default: ""
+    description: "Secret key for Object Storage. Secret key = Key for Azure.  Secret key = token for GCP"
+    type: string
+    required: false
+    visible:
+      or:
+        - ${os_2_os}
+        - ${os_2_posix}
+
+  src_region:
+    title: "Region"
+    default: ""
+    description: "Region for Object Storage. Example: us-ashburn-1"
+    type: string
+    required: false
+    visible:
+      and:
+        - or:
+            - ${os_2_os}
+            - ${os_2_posix}
+        - not:
+            - or:
+                - eq:
+                    - ${src_os_type}
+                    - "gcs"
+                - eq:
+                    - ${src_os_type}
+                    - "azureblob"
+
+  src_endpoint:
+    title: "Endpoint URL for Object Storage"
+    default: ""
+    description: "Endpoint URL for Object Storage. Example: hpc.compat.objectstorage.us-ashburn-1.oraclecloud.com"
+    type: string
+    required: false
+    visible:
+      and:
+        - or:
+            - ${os_2_os}
+            - ${os_2_posix}
+        - not:
+            - or:
+                - eq:
+                    - ${src_os_type}
+                    - "gcs"
+                - eq:
+                    - ${src_os_type}
+                    - "azureblob"
+
+  src_bucket_name:
+    title: "Bucket Name to migrate data from"
+    default: ""
+    description: "bucket name. Bucket Name = Container name for Azure."
+    type: string
+    required: false
+    visible:
+      or:
+        - ${os_2_os}
+        - ${os_2_posix}
+
 
 
   source_fs_server_ip:
@@ -806,57 +888,176 @@ variables:
     title: "NFS server IP"
     default: "0.0.0.0"
     description: "IP address of the NFS server"
-    visible: true
-    
+    visible:
+      or:
+        - ${posix_2_os}
+        - ${posix_2_posix}
+
   source_fs_server_exported_path:
     type: string
     title: "NFS server Exported Directory Path"
     default: "/iad-ad-3-fss"
     description: "Value of the exported directory path on the NFS server"
-    visible: true
-    
+    visible:
+      or:
+        - ${posix_2_os}
+        - ${posix_2_posix}
+
   source_fs_options:
     type: string
     title: "Mount Options"
     default: ""
     description: "Mount options (ro preferred), FSS requires empty string"
-    visible: true
-        
+    visible:
+      or:
+        - ${posix_2_os}
+        - ${posix_2_posix}
+
   source_fs_local_mount_path:
     type: string
     title: "NFS Local Mount Directory Path"
     default: "/mnt/iad-ad-3-fss"
     description: "Value of the local mount directory to mount the source file system"
-    visible: true
- 
+    visible:
+      or:
+        - ${posix_2_os}
+        - ${posix_2_posix}
+
     
   source_fs_directory_to_sync:
     type: string
     title: "Absolute Path of Directory to Sync/Migrate/Replicate"
     default: "/mnt/iad-ad-3-fss/linux_src_code"
     description: "absolute path of directory to sync/migrate/replicate"
-    visible: true
-    
+    visible:
+      or:
+        - ${posix_2_os}
+        - ${posix_2_posix}
+
+
+  destination_access_key_id:
+    title: "Access key for Object Storage"
+    default: ""
+    description: "Access key for Object Storage. access_key_id = Account name for Azure.  access_key_id = project_number for GCP"
+    type: string
+    required: false
+    visible:
+      or:
+        - ${os_2_os}
+        - ${posix_2_os}
+
+  destination_secret_access_key:
+    title: "Secret key for Object Storage"
+    default: ""
+    description: "Secret key for Object Storage. Secret key = Key for Azure.  Secret key = token for GCP"
+    type: string
+    required: false
+    visible:
+      or:
+        - ${os_2_os}
+        - ${posix_2_os}
+
+  destination_region:
+    title: "Region"
+    default: ""
+    description: "Region for Object Storage. Example: us-ashburn-1"
+    type: string
+    required: false
+    visible:
+      and:
+        - or:
+            - ${os_2_os}
+            - ${posix_2_os}
+        - not:
+            - or:
+                - eq:
+                    - ${destination_os_type}
+                    - "gcs"
+                - eq:
+                    - ${destination_os_type}
+                    - "azureblob"
+
+  destination_endpoint:
+    title: "Endpoint URL for Object Storage"
+    default: ""
+    description: "Endpoint URL for Object Storage. Example: hpc.compat.objectstorage.us-ashburn-1.oraclecloud.com"
+    type: string
+    required: false
+    visible:
+      and:
+        - or:
+            - ${os_2_os}
+            - ${posix_2_os}
+        - not:
+            - or:
+                - eq:
+                    - ${destination_os_type}
+                    - "gcs"
+                - eq:
+                    - ${destination_os_type}
+                    - "azureblob"
+
+  destination_bucket_name:
+    title: "Bucket Name to migrate data to"
+    default: ""
+    description: "bucket name. Bucket Name = Container name for Azure."
+    type: string
+    required: false
+    visible:
+      or:
+        - ${os_2_os}
+        - ${posix_2_os}
 
   destination_fs_server_ip:
     type: string
     title: "Destination File System server IP"
     default: "0.0.0.0"
     description: "IP address of Destination file system server"
-    visible: true
-    
+    visible:
+      or:
+        - ${os_2_posix}
+        - ${posix_2_posix}
+
     
   destination_fs_directory_to_sync:
     type: string
     title: "Absolute Path of Directory to Sync/Migrate/Replicate"
     default: "/mnt/nfs/path-to-directory"
     description: "On destination file system, absolute path of directory to store data from sync/migrate/replicate."
-    visible: true
-    
+    visible:
+      or:
+        - ${os_2_posix}
+        - ${posix_2_posix}
+
     
   destination_fs_server_user:
     type: string
-    title: "User account for SSH into Destination File System Server"
+    title: "User account to write using SSH for posix-2-posix or for mounted destination file system"
     default: "opc"
-    description: "User account for SSH into Destination File System Server. Example: opc for opc@<destination_fs_server>"
-    visible: true
+    description: "User account to write using SSH for posix-2-posix or for mounted destination file system. Example: opc for opc@<destination_fs_server>"
+    visible:
+      or:
+        - ${os_2_posix}
+        - ${posix_2_posix}
+
+  destination_fs_server_exported_path:
+    type: string
+    title: "NFS server Exported Directory Path"
+    default: "/iad-ad-3-fss"
+    description: "Value of the exported directory path on the NFS server"
+    visible: ${os_2_posix}
+
+  destination_fs_options:
+    type: string
+    title: "Mount Options"
+    default: ""
+    description: "Mount options (ro preferred), FSS requires empty string"
+    visible: ${os_2_posix}
+
+  destination_fs_local_mount_path:
+    type: string
+    title: "NFS Local Mount Directory Path"
+    default: "/mnt/iad-ad-3-fss"
+    description: "Value of the local mount directory to mount the source file system"
+    visible: ${os_2_posix}
+

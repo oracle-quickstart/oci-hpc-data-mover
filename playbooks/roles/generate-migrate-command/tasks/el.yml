@@ -1,0 +1,12 @@
+
+- block:
+
+  - name: Copy generate_migrate_command.sh.j2
+    template:
+      src: generate_migrate_command.sh.j2
+      dest: '/home/opc/generate_migrate_command.sh'
+      owner: opc
+      group: opc
+      mode: '0755'
+
+

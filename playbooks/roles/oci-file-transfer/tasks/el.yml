@@ -1,0 +1,8 @@
+- block:
+  - name: install fss-parallel-tools
+    become: true
+    yum:
+      enablerepo: 'ol7_developer'
+      state: latest
+      name:
+        - fss-parallel-tools

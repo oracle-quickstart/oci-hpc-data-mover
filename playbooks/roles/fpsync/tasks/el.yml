@@ -58,12 +58,12 @@
     when: ('compute' in group_names)
 
 
-  - name: Copy oci-hpc-data-mover.sh
-    template:
-      src: oci-hpc-data-mover.sh.j2
-      dest: /home/opc/oci-hpc-data-mover.sh
-      owner: opc
-      group: opc
-      mode: '0755'
+#  - name: Copy oci-hpc-data-mover.sh
+#    template:
+#      src: oci-hpc-data-mover.sh.j2
+#      dest: /home/opc/oci-hpc-data-mover.sh
+#      owner: opc
+#      group: opc
+#      mode: '0755'
 
 

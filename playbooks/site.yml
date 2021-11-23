@@ -1,11 +1,4 @@
 
-- hosts: compute
-  become: true
-  vars: 
-    initial: true
-  gather_facts: true
-  roles: 
-    - hostname
 
 - hosts: all
   become: true
@@ -16,101 +9,23 @@
   roles: 
     - oci-cloud-agent
 #    - packages
-    - oci-legacy
-    - firewall 
+    - firewall
     - oci-hostname
     - ssh
-    - localdisk
     - limits
     - mpi-hostfiles
     - etc-hosts
 
+
 - hosts: bastion
   become: true
-  vars:
-    export_path: "/home"
-    export_name: "home"
-    local_path:  "/home"
-
-  tasks:
-    - include_role:
-        name: nfs-server
-      when: home_nfs|default(true)|bool
-
-
-- hosts: compute
-  become: true
-
-  tasks:
-    - include_role:
-        name: home_nfs
-      when: home_nfs|default(true)|bool
-    - include_role:
-        name: nfs-client
-      vars:
-        local_path: "/home"
-        export_host: "{{ hostvars[groups['bastion'][0]]['ansible_default_ipv4']['address'] }}"
-        export_path: "/home"
-        options: "defaults,noatime,bg,timeo=100,ac,actimeo=120,nocto,rsize=1048576,wsize=1048576,nolock,local_lock={{ lock }},mountproto=tcp,sec=sys,_netdev"
-        lock: "all"
-      when: home_nfs|default(true)|bool
- 
-- hosts: bastion
-  become: true
-  vars: 
-    export_path: "{{ cluster_nfs_path }}"
-    export_name: "cluster"
-    local_path:  "/export/cluster"
-    iscsi_ip: "{{ bastion_mount_ip }}"
   tasks: 
     - include_role: 
         name: passwords
-    - include_role: 
-        name: iscsi
-      when: bastion_block|default(false)|bool
-    - include_role: 
-        name: nfs-server
-      when: cluster_nfs|default(true)|bool
       
-
-- hosts: nfs
-  become: true
-  vars:
-     export_path: "{{ scratch_nfs_path }}"
-     export_name: "scratch"
-     local_path:  "/mnt/localdisk/nfs"
-     iscsi_ip: "{{ cluster_mount_ip }}"
-
-  tasks: 
-    - include_role: 
-        name: iscsi
-      when: scratch_nfs_type == "block" and scratch_nfs|default(true)|bool
-    - include_role: 
-        name: nfs-server
-      when: scratch_nfs|default(true)|bool
-
 - hosts: all
   become: true
-  
-  tasks: 
-    - include_role: 
-        name: nfs-client
-      vars: 
-        local_path: "{{ cluster_nfs_path }}"
-        export_host: "{{ hostvars[groups['bastion'][0]]['ansible_default_ipv4']['address'] }}"
-        options: "defaults,noatime,bg,timeo=100,ac,actimeo=120,nocto,rsize=1048576,wsize=1048576,nolock,local_lock={{ lock }},mountproto=tcp,sec=sys,_netdev"
-        export_path: "/export/cluster"
-        lock: "all"
-      when: cluster_nfs|default(true)|bool
-    - include_role: 
-        name: nfs-client
-      vars: 
-        local_path: "{{ scratch_nfs_path }}"
-        export_host: "{{ hostvars[groups['nfs'][0]]['ansible_default_ipv4']['address'] }}"
-        export_path: "/mnt/localdisk/nfs"
-        options: "defaults,noatime,bg,timeo=100,ac,actimeo=120,nocto,rsize=1048576,wsize=1048576,nolock,local_lock={{ lock }},mountproto=tcp,sec=sys,_netdev"
-        lock: "none" 
-      when: scratch_nfs|default(true)|bool  
+  tasks:
     - include_role:
         name: nfs-client
       vars:
@@ -120,46 +35,6 @@
         options: "{{ nfs_options }}"
         lock: "none"
       when: add_nfs|default(false)|bool
-
-
-
-- hosts: bastion
-  become: true
-  tasks:
-    - include_role:
-        name: prometheus
-      when: monitoring|default(false)|bool
-    - include_role:
-        name: grafana
-      when: monitoring|default(false)|bool
-
-
-#- hosts: bastion
-#  become: true
-#  tasks:
-#    - include_role:
-#        name: mysql
-      
-# It requires mysql role, so add that also for slurm.
-- hosts: bastion
-  vars:
-    destroy: false
-    initial: true
-    download_path: "{{ '/nfs/cluster/' if cluster_nfs|bool else '/tmp' }}"
-  tasks:
-    - include_role: 
-        name: slurm
-      when: slurm|default(false)|bool
-
-- hosts: compute
-  vars:
-    destroy: false
-    initial: true
-    download_path: "{{ '/nfs/cluster/' if cluster_nfs|bool else '/tmp' }}"
-  tasks: 
-    - include_role: 
-        name: slurm
-      when: slurm|default(false)|bool
 
 
 
@@ -174,28 +49,105 @@
         export_path: "{{ source_fs_server_exported_path }} "
         options: "{{ source_fs_options }}"
         lock: "none"
+      when: posix_2_posix|default(false)|bool or posix_2_os|default(false)|bool
 
 
+- hosts: compute
+  become: true
+  tasks:
+    - include_role:
+        name: nfs-client
+      vars:
+        local_path: "{{ destination_fs_local_mount_path }}"
+        export_host: "{{ destination_fs_server_ip }}"
+        export_path: "{{ destination_fs_server_exported_path }} "
+        options: "{{ destination_fs_options }}"
+        lock: "none"
+      when: os_2_posix|default(false)|bool
 
-- hosts: compute[0]
+
+- hosts: compute
   tasks:
     - include_role:
         name: source-fs
-
-- hosts: compute[0]
-  tasks:
+      when: posix_all_tools|default(false)|bool or fpsync|default(false)|bool
     - include_role:
         name: destination-fs
-
-- hosts: compute[0]
-  tasks:
+      when: posix_all_tools|default(false)|bool or fpsync|default(false)|bool
     - include_role:
         name: fpsync-shared-fs
-
-- hosts: compute[0]
-  tasks:
+      when: posix_all_tools|default(false)|bool or fpsync|default(false)|bool
     - include_role:
         name: fpsync
+      when: posix_all_tools|default(false)|bool or fpsync|default(false)|bool
+
+
+- hosts: compute
+  tasks:
+    - include_role:
+        name: oci-file-transfer
+      when: posix_all_tools|default(false)|bool
+
+
+
+- hosts: compute
+  tasks:
+    - include_role:
+        name: oci-file-transfer
+      when: oci_parallel_transfer_tools|default(false)|bool
+      
+
+- hosts: compute
+  tasks:
+    - include_role:
+        name: rclone
+      when: os_all_tools|default(false)|bool
+    - include_role:
+        name: s5cmd
+      when: os_all_tools|default(false)|bool
+    - include_role:
+        name: oci-cli
+      when: os_all_tools|default(false)|bool
+
+
+- hosts: compute
+  tasks:
+    - include_role:
+        name: rclone
+      when: rclone|default(false)|bool
+
+- hosts: compute
+  tasks:
+    - include_role:
+        name: s5cmd
+      when: s5cmd|default(false)|bool
+
+
+- hosts: compute
+  tasks:
+    - include_role:
+        name: oci-cli
+      when: oci_cli|default(false)|bool
+
+
+# generate sample script to show how to run migration. Common for all tools.
+- hosts: compute
+  tasks:
+    - include_role:
+        name: generate-migrate-command
+
+
+- hosts: bastion
+  become: true
+  tasks:
+    - include_role:
+        name: prometheus
+      when: monitoring|default(false)|bool
+    - include_role:
+        name: grafana
+      when: monitoring|default(false)|bool
+
+
 
 
 # deploy prometheus node exporter on all nodes

@@ -1,0 +1,25 @@
+
+- block:
+
+  - name: Download rclone
+    command: "curl -O https://rclone.org/install.sh"
+
+  - name: Install rclone
+    command: "sudo bash /home/opc/install.sh"
+    register: rclone_install_status
+    failed_when: not(rclone_install_status.rc == 3 or rclone_install_status.rc == 0)
+
+  - name: Create config directory
+    file:
+      path: '/home/opc/.config/rclone'
+      state: directory
+      mode: '0700'
+
+  - name: Copy rclone.conf.j2
+    template:
+      src: rclone.conf.j2
+      dest: '/home/opc/.config/rclone/rclone.conf'
+      owner: opc
+      group: opc
+      mode: '0600'
+

@@ -27,12 +27,6 @@ locals {
   is_bastion_flex_shape = length(regexall(".*VM.*[3-4].*Flex$", var.bastion_shape)) > 0 ? [var.bastion_ocpus]:[]
   is_instance_pool_flex_shape = length(regexall(".*VM.*[3-4].*Flex$", var.instance_pool_shape)) > 0 ? [var.instance_pool_ocpus]:[]
 
-  bastion_mount_ip = var.bastion_block ? element(concat(oci_core_volume_attachment.bastion_volume_attachment.*.ipv4, [""]), 0) : "none"
 
-  scratch_nfs_type = var.scratch_nfs_type_pool 
-
-  iscsi_ip = element(concat(oci_core_volume_attachment.instance_pool_volume_attachment.*.ipv4, [""]), 0)
-
-  mount_ip = local.scratch_nfs_type == "block" ? local.iscsi_ip : "none" 
 
 }

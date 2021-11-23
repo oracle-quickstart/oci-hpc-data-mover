@@ -1,21 +1,3 @@
-resource "oci_core_volume" "bastion_volume" { 
-  count = var.bastion_block ? 1 : 0
-  availability_domain = var.bastion_ad
-  compartment_id = var.targetCompartment
-  display_name = "${local.cluster_name}-bastion-volume"
-  
-  size_in_gbs = var.bastion_block_volume_size
-  vpus_per_gb = split(".", var.bastion_block_volume_performance)[0]
-} 
-
-resource "oci_core_volume_attachment" "bastion_volume_attachment" { 
-  count = var.bastion_block ? 1 : 0 
-  attachment_type = "iscsi"
-  volume_id       = oci_core_volume.bastion_volume[0].id
-  instance_id     = oci_core_instance.bastion.id
-  display_name    = "${local.cluster_name}-bastion-volume-attachment"
-  device          = "/dev/oracleoci/oraclevdb"
-} 
 
 resource "oci_core_instance" "bastion" {
   depends_on          = [oci_core_subnet.public-subnet]
@@ -56,7 +38,7 @@ resource "oci_core_instance" "bastion" {
 } 
 
 resource "null_resource" "bastion" { 
-  depends_on = [oci_core_instance.bastion, oci_core_volume_attachment.bastion_volume_attachment ] 
+  depends_on = [oci_core_instance.bastion ] 
   triggers = { 
     bastion = oci_core_instance.bastion.id
   } 
@@ -136,7 +118,7 @@ resource "null_resource" "bastion" {
 }
   
 resource "null_resource" "cluster" { 
-  depends_on = [null_resource.bastion, oci_core_instance_pool.instance_pool, oci_core_instance.bastion, oci_core_volume_attachment.bastion_volume_attachment ] 
+  depends_on = [null_resource.bastion, oci_core_instance_pool.instance_pool, oci_core_instance.bastion ] 
   triggers = { 
     cluster_instances = join(", ", local.cluster_instances_names)
   } 
@@ -148,23 +130,12 @@ resource "null_resource" "cluster" {
       compute = var.node_count > 0 ? zipmap(local.cluster_instances_names, local.cluster_instances_ips) : zipmap([],[])
       public_subnet = data.oci_core_subnet.public_subnet.cidr_block, 
       private_subnet = data.oci_core_subnet.private_subnet.cidr_block, 
-      nfs = var.node_count > 0 ? local.cluster_instances_names[0] : "",
-      home_nfs = var.home_nfs,
-      scratch_nfs = var.use_scratch_nfs && var.node_count > 0,
-      cluster_nfs = var.use_cluster_nfs,
-      cluster_nfs_path = var.cluster_nfs_path,
-      scratch_nfs_path = var.scratch_nfs_path,
+      #nfs = var.node_count > 0 ? local.cluster_instances_names[0] : "",
       add_nfs = var.add_nfs,
       nfs_target_path = var.nfs_target_path,
       nfs_source_IP = local.nfs_source_IP,
       nfs_source_path = var.nfs_source_path,
       nfs_options = var.nfs_options,
-      cluster_network = var.cluster_network,
-      slurm = var.slurm,
-      bastion_block = var.bastion_block,
-      scratch_nfs_type = local.scratch_nfs_type,
-      bastion_mount_ip = local.bastion_mount_ip,
-      cluster_mount_ip = local.mount_ip,
       cluster_name = local.cluster_name,
       shape = var.instance_pool_shape,
       instance_pool_ocpus = var.instance_pool_ocpus,
@@ -179,6 +150,40 @@ resource "null_resource" "cluster" {
       source_fs_local_mount_path = var.source_fs_local_mount_path
       source_fs_directory_to_sync = var.source_fs_directory_to_sync
       source_fs_options = var.source_fs_options
+
+      destination_fs_server_ip = var.destination_fs_server_ip
+      destination_fs_server_exported_path = var.destination_fs_server_exported_path
+      destination_fs_local_mount_path = var.destination_fs_local_mount_path
+      destination_fs_directory_to_sync = var.destination_fs_directory_to_sync
+      destination_fs_options = var.destination_fs_options
+
+      prereq_complete = var.prereq_complete
+      posix_2_posix = var.posix_2_posix
+      posix_2_os = var.posix_2_os
+      os_2_os = var.os_2_os
+      os_2_posix = var.os_2_posix
+      
+      fpsync = var.fpsync
+      oci_parallel_transfer_tools = var.oci_parallel_transfer_tools
+      posix_all_tools = var.posix_all_tools
+      rclone = var.rclone
+      s5cmd = var.s5cmd
+      oci_cli = var.oci_cli
+      os_all_tools = var.os_all_tools
+
+      src_os_type = var.src_os_type
+      src_access_key_id = var.src_access_key_id
+      src_secret_access_key = var.src_secret_access_key
+      src_region = var.src_region
+      src_endpoint = var.src_endpoint
+      src_bucket_name = var.src_bucket_name
+
+      destination_os_type = var.destination_os_type
+      destination_access_key_id = var.destination_access_key_id
+      destination_secret_access_key = var.destination_secret_access_key
+      destination_region = var.destination_region
+      destination_endpoint = var.destination_endpoint
+      destination_bucket_name = var.destination_bucket_name
 
       })
 

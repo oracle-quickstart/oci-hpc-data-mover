@@ -17,6 +17,8 @@ output "generated_ssh_public_key_to_add_to_destination_node" {
   value = tls_private_key.ssh.public_key_openssh
 }
 
+/*
 output "next_step_copy_ssh_public_key" {
-  value = "IMPORTANT REQUIRED NEXT STEP:  Add the public SSH key to /home/<username>/.ssh/authorized_keys on destination/target file system servers which will be used for migration/sync/copy/replication."
+  value = "Applies only for POSIX-2-POSIX migration: Add the public SSH key to /home/<username>/.ssh/authorized_keys on destination/target file system servers which will be used for migration/sync/copy/replication."
 }
+*/
