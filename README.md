@@ -120,12 +120,14 @@ Grafana is deployed on Bastion node and can be accessed via  http://<bastion-pub
 
 ### Total Bandwidth Dashboard 
 Set these values on dashboard: 
+ 
+```
 - Origin_prom=None
 - JOB=Prometheus
 - Host=<select all worker nodes>
 - Instance=<select all worker nodes>
 - NIC=<select NIC>
-
+```
 
 Graph shows aggregate n/w bandwidth transmit Gbps from all worker nodes (to migration Target/Destination node) as well as for each individual worker node. 
 
