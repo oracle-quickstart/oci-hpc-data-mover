@@ -70,7 +70,7 @@ This is not a comprehensive list for comparison.  This is a subset of how we env
 
 
 ## Architecture
-
+![](./images/Single_NFS_Server_High_Level_Arch.png)
 
 
 ## Pre-requisites 
@@ -107,7 +107,7 @@ allow group Group-X to manage all-resources in compartment compartmentName
 
 ### Marketplace listing to create the OCI HPC Data Mover cluster 
 
-[!OCI-HPC-Data-Mover-Cluster-Marketplace-Listing](https://cloudmarketplace.oracle.com/marketplace/en_US/listing/108840961)
+[OCI-HPC-Data-Mover-Cluster-Marketplace-Listing](https://cloudmarketplace.oracle.com/marketplace/en_US/listing/108840961)
 
 ### ORM Stack to create the OCI HPC Data Mover cluster 
 
