@@ -42,7 +42,7 @@ elif [ $ID == "debian" ] || [ $ID == "ubuntu" ] ; then
 
 fi 
 
-ansible-galaxy collection install ansible.netcommon > /dev/null
+ansible-galaxy collection install ansible.netcommon:==2.5.1 > /dev/null
 ansible-galaxy collection install community.general > /dev/null
 ansible-galaxy collection install ansible.posix > /dev/null
 ansible-galaxy install cloudalchemy.node_exporter > /dev/null
